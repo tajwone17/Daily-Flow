@@ -75,6 +75,23 @@ export function isPastWeek(dateString: string): boolean {
   return isWithinPast7Days(dateString) && !isToday(dateString);
 }
 
+// Check if task is currently running (between start and end time)
+export function isTaskRunning(startTime: string, endTime: string): boolean {
+  const now = new Date();
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+
+  return now >= start && now <= end;
+}
+
+// Check if task is upcoming (start time is in the future)
+export function isTaskUpcoming(startTime: string): boolean {
+  const now = new Date();
+  const start = new Date(startTime);
+
+  return start > now;
+}
+
 // Get relative date string (Today, Yesterday, etc.)
 export function getRelativeDateString(dateString: string): string {
   const today = new Date();

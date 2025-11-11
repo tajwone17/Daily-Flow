@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Task, isWithinPast7Days, getRelativeDateString } from "@/lib/types";
+import { Task, isToday, isTaskRunning, isTaskUpcoming } from "@/lib/types";
 import { getTasks } from "@/lib/taskApi";
 import TaskCard from "@/components/TaskCard";
 import TaskFormModal from "@/components/TaskFormModal";
+import Navigation from "@/components/Navigation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -80,23 +81,13 @@ export default function DashboardPage() {
     setIsTaskModalOpen(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.push("/");
-  };
-
-  // Filter tasks
-  const past7DaysTasks = tasks
-    .filter((task) => isWithinPast7Days(task.startTime))
-    .sort(
-      (a, b) =>
-        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-    );
+  // Filter tasks for the new dashboard structure
+  const todayTasks = tasks.filter((task) => isToday(task.startTime));
+  const runningTasks = tasks.filter(
+    (task) => isTaskRunning(task.startTime, task.endTime) && !task.completed
+  );
   const upcomingTasks = tasks.filter(
-    (task) =>
-      !isWithinPast7Days(task.startTime) &&
-      new Date(task.startTime) > new Date()
+    (task) => isTaskUpcoming(task.startTime) && !task.completed
   );
   const completedTasks = tasks.filter((task) => task.completed);
 
@@ -104,7 +95,7 @@ export default function DashboardPage() {
   const totalTasks = tasks.length;
   const completedCount = completedTasks.length;
   const pendingCount = totalTasks - completedCount;
-  const past7DaysCount = past7DaysTasks.length;
+  const runningCount = runningTasks.length;
 
   if (loading) {
     return (
@@ -121,80 +112,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="bg-linear-to-br from-indigo-600 via-blue-600 to-blue-700 text-white p-2 rounded-xl">
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Daily Flow
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Welcome back, {user?.fullName || "User"}!
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleCreateTask}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                <span>New Task</span>
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                title="Logout"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Navigation */}
+      <Navigation user={user} onCreateTask={handleCreateTask} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -286,9 +205,9 @@ export default function DashboardPage() {
 
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="flex items-center">
-              <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
+              <div className="bg-red-100 dark:bg-red-900 p-3 rounded-lg">
                 <svg
-                  className="w-6 h-6 text-purple-600 dark:text-purple-400"
+                  className="w-6 h-6 text-red-600 dark:text-red-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -297,16 +216,16 @@ export default function DashboardPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
                   />
                 </svg>
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Past 7 Days
+                  Running Now
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {past7DaysCount}
+                  {runningCount}
                 </p>
               </div>
             </div>
@@ -321,8 +240,8 @@ export default function DashboardPage() {
         )}
 
         {/* Tasks Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Tasks (Past 7 Days) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Today's Tasks */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
               <svg
@@ -335,16 +254,16 @@ export default function DashboardPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              Recent Tasks - Past 7 Days ({past7DaysCount})
+              Today&apos;s Tasks ({todayTasks.length})
             </h2>
             <div className="space-y-4">
-              {past7DaysTasks.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
+              {todayTasks.length === 0 ? (
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
                   <svg
-                    className="w-16 h-16 mx-auto text-gray-400 mb-4"
+                    className="w-12 h-12 mx-auto text-gray-400 mb-3"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -353,38 +272,73 @@ export default function DashboardPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    No recent tasks in the past 7 days
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    No tasks for today
                   </p>
-                  <button
-                    onClick={handleCreateTask}
-                    className="mt-4 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    Create your first task
-                  </button>
                 </div>
               ) : (
-                past7DaysTasks.map((task) => (
-                  <div key={task._id} className="space-y-2">
-                    {/* Date header for task grouping */}
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      {getRelativeDateString(task.startTime)}
+                todayTasks.map((task) => (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    onTaskUpdate={handleTaskUpdate}
+                    onTaskDelete={handleTaskDelete}
+                    onTaskEdit={handleEditTask}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Running Tasks */}
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+              <svg
+                className="w-6 h-6 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              Running Now ({runningTasks.length})
+            </h2>
+            <div className="space-y-4">
+              {runningTasks.length === 0 ? (
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
+                  <svg
+                    className="w-12 h-12 mx-auto text-gray-400 mb-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    No tasks running right now
+                  </p>
+                </div>
+              ) : (
+                runningTasks.map((task) => (
+                  <div key={task._id} className="relative">
+                    {/* Running indicator */}
+                    <div className="absolute -top-2 -right-2 z-10">
+                      <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                        LIVE
+                      </div>
                     </div>
                     <TaskCard
                       task={task}
@@ -418,9 +372,9 @@ export default function DashboardPage() {
             </h2>
             <div className="space-y-4">
               {upcomingTasks.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
                   <svg
-                    className="w-16 h-16 mx-auto text-gray-400 mb-4"
+                    className="w-12 h-12 mx-auto text-gray-400 mb-3"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -432,7 +386,7 @@ export default function DashboardPage() {
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
                     No upcoming tasks
                   </p>
                 </div>
@@ -448,11 +402,6 @@ export default function DashboardPage() {
                       onTaskEdit={handleEditTask}
                     />
                   ))
-              )}
-              {upcomingTasks.length > 5 && (
-                <p className="text-center text-gray-600 dark:text-gray-400 py-4">
-                  And {upcomingTasks.length - 5} more tasks...
-                </p>
               )}
             </div>
           </div>
