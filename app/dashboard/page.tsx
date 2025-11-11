@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Task, isToday } from "@/lib/types";
+import { Task, isWithinPast7Days, getRelativeDateString } from "@/lib/types";
 import { getTasks } from "@/lib/taskApi";
 import TaskCard from "@/components/TaskCard";
 import TaskFormModal from "@/components/TaskFormModal";
@@ -87,9 +87,10 @@ export default function DashboardPage() {
   };
 
   // Filter tasks
-  const todayTasks = tasks.filter((task) => isToday(task.startTime));
+  const past7DaysTasks = tasks.filter((task) => isWithinPast7Days(task.startTime))
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
   const upcomingTasks = tasks.filter(
-    (task) => !isToday(task.startTime) && new Date(task.startTime) > new Date()
+    (task) => !isWithinPast7Days(task.startTime) && new Date(task.startTime) > new Date()
   );
   const completedTasks = tasks.filter((task) => task.completed);
 
@@ -97,7 +98,7 @@ export default function DashboardPage() {
   const totalTasks = tasks.length;
   const completedCount = completedTasks.length;
   const pendingCount = totalTasks - completedCount;
-  const todayCount = todayTasks.length;
+  const past7DaysCount = past7DaysTasks.length;
 
   if (loading) {
     return (
@@ -296,10 +297,10 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Today
+                  Past 7 Days
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {todayCount}
+                  {past7DaysCount}
                 </p>
               </div>
             </div>
@@ -315,7 +316,7 @@ export default function DashboardPage() {
 
         {/* Tasks Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Today's Tasks */}
+          {/* Recent Tasks (Past 7 Days) */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
               <svg
@@ -328,13 +329,13 @@ export default function DashboardPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              Today&apos;s Tasks ({todayCount})
+              Recent Tasks - Past 7 Days ({past7DaysCount})
             </h2>
             <div className="space-y-4">
-              {todayTasks.length === 0 ? (
+              {past7DaysTasks.length === 0 ? (
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
                   <svg
                     className="w-16 h-16 mx-auto text-gray-400 mb-4"
@@ -346,11 +347,11 @@ export default function DashboardPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
                   <p className="text-gray-600 dark:text-gray-400">
-                    No tasks for today
+                    No recent tasks in the past 7 days
                   </p>
                   <button
                     onClick={handleCreateTask}
@@ -360,14 +361,22 @@ export default function DashboardPage() {
                   </button>
                 </div>
               ) : (
-                todayTasks.map((task) => (
-                  <TaskCard
-                    key={task._id}
-                    task={task}
-                    onTaskUpdate={handleTaskUpdate}
-                    onTaskDelete={handleTaskDelete}
-                    onTaskEdit={handleEditTask}
-                  />
+                past7DaysTasks.map((task) => (
+                  <div key={task._id} className="space-y-2">
+                    {/* Date header for task grouping */}
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {getRelativeDateString(task.startTime)}
+                    </div>
+                    <TaskCard
+                      task={task}
+                      onTaskUpdate={handleTaskUpdate}
+                      onTaskDelete={handleTaskDelete}
+                      onTaskEdit={handleEditTask}
+                    />
+                  </div>
                 ))
               )}
             </div>

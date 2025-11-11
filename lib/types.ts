@@ -59,3 +59,36 @@ export function isToday(dateString: string): boolean {
     today.getFullYear() === taskDate.getFullYear()
   );
 }
+
+// Check if task is within the past 7 days (including today)
+export function isWithinPast7Days(dateString: string): boolean {
+  const today = new Date();
+  const taskDate = new Date(dateString);
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+
+  return taskDate >= sevenDaysAgo && taskDate <= today;
+}
+
+// Check if task is from previous days (not today but within past 7 days)
+export function isPastWeek(dateString: string): boolean {
+  return isWithinPast7Days(dateString) && !isToday(dateString);
+}
+
+// Get relative date string (Today, Yesterday, etc.)
+export function getRelativeDateString(dateString: string): string {
+  const today = new Date();
+  const taskDate = new Date(dateString);
+  const diffTime = today.getTime() - taskDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "Today";
+  } else if (diffDays === 1) {
+    return "Yesterday";
+  } else if (diffDays <= 7) {
+    return `${diffDays} days ago`;
+  } else {
+    return formatDate(dateString);
+  }
+}
