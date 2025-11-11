@@ -87,10 +87,16 @@ export default function DashboardPage() {
   };
 
   // Filter tasks
-  const past7DaysTasks = tasks.filter((task) => isWithinPast7Days(task.startTime))
-    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+  const past7DaysTasks = tasks
+    .filter((task) => isWithinPast7Days(task.startTime))
+    .sort(
+      (a, b) =>
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
   const upcomingTasks = tasks.filter(
-    (task) => !isWithinPast7Days(task.startTime) && new Date(task.startTime) > new Date()
+    (task) =>
+      !isWithinPast7Days(task.startTime) &&
+      new Date(task.startTime) > new Date()
   );
   const completedTasks = tasks.filter((task) => task.completed);
 
@@ -365,8 +371,18 @@ export default function DashboardPage() {
                   <div key={task._id} className="space-y-2">
                     {/* Date header for task grouping */}
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
                       </svg>
                       {getRelativeDateString(task.startTime)}
                     </div>
