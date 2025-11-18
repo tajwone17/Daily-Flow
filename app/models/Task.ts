@@ -17,6 +17,12 @@ const taskSchema = new Schema(
       ref: "User",
       required: true,
     },
+    reminder: {
+      enabled: { type: Boolean, default: false },
+      time: { type: Date, required: false }, // Absolute reminder time
+      minutesBefore: { type: Number, default: 15 }, // Minutes before task start
+      notified: { type: Boolean, default: false }, // Track if notification was sent
+    },
   },
   { timestamps: true }
 );

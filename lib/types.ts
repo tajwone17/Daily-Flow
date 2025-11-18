@@ -9,6 +9,12 @@ export interface Task {
   userId: string;
   createdAt: string;
   updatedAt: string;
+  reminder?: {
+    enabled: boolean;
+    time?: string;
+    minutesBefore: number;
+    notified: boolean;
+  };
 }
 
 export interface CreateTaskData {
@@ -17,6 +23,10 @@ export interface CreateTaskData {
   startTime: string;
   endTime: string;
   priority: "High" | "Medium" | "Low";
+  reminder?: {
+    enabled: boolean;
+    minutesBefore: number;
+  };
 }
 
 export interface UpdateTaskData {
@@ -26,6 +36,10 @@ export interface UpdateTaskData {
   endTime?: string;
   priority?: "High" | "Medium" | "Low";
   completed?: boolean;
+  reminder?: {
+    enabled: boolean;
+    minutesBefore: number;
+  };
 }
 
 // Priority colors for UI

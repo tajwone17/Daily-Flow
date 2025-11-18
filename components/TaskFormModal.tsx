@@ -23,6 +23,10 @@ export default function TaskFormModal({
     startTime: "",
     endTime: "",
     priority: "Medium" as "High" | "Medium" | "Low",
+    reminder: {
+      enabled: false,
+      minutesBefore: 15,
+    },
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +45,10 @@ export default function TaskFormModal({
           startTime: formatDateTimeLocal(startTime),
           endTime: formatDateTimeLocal(endTime),
           priority: editingTask.priority,
+          reminder: {
+            enabled: editingTask.reminder?.enabled || false,
+            minutesBefore: editingTask.reminder?.minutesBefore || 15,
+          },
         });
       } else {
         // Set default values for new task
@@ -53,6 +61,10 @@ export default function TaskFormModal({
           startTime: formatDateTimeLocal(now),
           endTime: formatDateTimeLocal(oneHourLater),
           priority: "Medium",
+          reminder: {
+            enabled: false,
+            minutesBefore: 15,
+          },
         });
       }
       setError("");
@@ -101,6 +113,7 @@ export default function TaskFormModal({
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
           priority: formData.priority,
+          reminder: formData.reminder,
         };
 
         const { task } = await updateTask(editingTask._id, updateData);
@@ -113,6 +126,7 @@ export default function TaskFormModal({
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
           priority: formData.priority,
+          reminder: formData.reminder,
         };
 
         const { task } = await createTask(createData);
@@ -245,6 +259,67 @@ export default function TaskFormModal({
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
               </select>
+            </div>
+
+            {/* Reminder Settings */}
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Reminder Notification
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="reminderEnabled"
+                    checked={formData.reminder.enabled}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        reminder: {
+                          ...formData.reminder,
+                          enabled: e.target.checked,
+                        },
+                      })
+                    }
+                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                  />
+                  <label
+                    htmlFor="reminderEnabled"
+                    className="ml-2 text-sm text-gray-600 dark:text-gray-400"
+                  >
+                    Enable reminder
+                  </label>
+                </div>
+              </div>
+
+              {formData.reminder.enabled && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Remind me before task starts
+                  </label>
+                  <select
+                    value={formData.reminder.minutesBefore}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        reminder: {
+                          ...formData.reminder,
+                          minutesBefore: parseInt(e.target.value),
+                        },
+                      })
+                    }
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white text-sm"
+                  >
+                    <option value={5}>5 minutes before</option>
+                    <option value={10}>10 minutes before</option>
+                    <option value={15}>15 minutes before</option>
+                    <option value={30}>30 minutes before</option>
+                    <option value={60}>1 hour before</option>
+                    <option value={120}>2 hours before</option>
+                    <option value={1440}>1 day before</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* Error Message */}

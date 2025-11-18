@@ -112,8 +112,15 @@ export async function PUT(
     console.log("Updating task:", { taskId: resolvedParams.id, userId });
 
     const body = await request.json();
-    const { title, description, startTime, endTime, priority, completed } =
-      body;
+    const {
+      title,
+      description,
+      startTime,
+      endTime,
+      priority,
+      completed,
+      reminder,
+    } = body;
 
     // Validate time range if both times are provided
     if (startTime && endTime) {
@@ -135,6 +142,12 @@ export async function PUT(
       endTime?: Date;
       priority?: string;
       completed?: boolean;
+      reminder?: {
+        enabled: boolean;
+        time?: Date;
+        minutesBefore: number;
+        notified: boolean;
+      };
     } = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
@@ -142,6 +155,38 @@ export async function PUT(
     if (endTime !== undefined) updateData.endTime = new Date(endTime);
     if (priority !== undefined) updateData.priority = priority;
     if (completed !== undefined) updateData.completed = completed;
+
+    // Handle reminder updates
+    if (reminder !== undefined) {
+      if (reminder.enabled && updateData.startTime) {
+        const reminderTime = new Date(
+          updateData.startTime.getTime() - reminder.minutesBefore * 60 * 1000
+        );
+        updateData.reminder = {
+          enabled: true,
+          time: reminderTime,
+          minutesBefore: reminder.minutesBefore,
+          notified: false,
+        };
+      } else if (reminder.enabled && startTime) {
+        const taskStart = new Date(startTime);
+        const reminderTime = new Date(
+          taskStart.getTime() - reminder.minutesBefore * 60 * 1000
+        );
+        updateData.reminder = {
+          enabled: true,
+          time: reminderTime,
+          minutesBefore: reminder.minutesBefore,
+          notified: false,
+        };
+      } else {
+        updateData.reminder = {
+          enabled: false,
+          minutesBefore: reminder.minutesBefore || 15,
+          notified: false,
+        };
+      }
+    }
 
     // First check if task exists
     const taskWithoutUserId = await Task.findOne({ _id: resolvedParams.id });

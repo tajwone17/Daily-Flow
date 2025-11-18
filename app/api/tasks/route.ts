@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, startTime, endTime, priority } = body;
+    const { title, description, startTime, endTime, priority, reminder } = body;
 
     // Validate required fields
     if (!title || !startTime || !endTime) {
@@ -87,6 +87,30 @@ export async function POST(request: NextRequest) {
 
     console.log("Creating task with userId:", { userId, type: typeof userId });
 
+    // Calculate reminder time if enabled
+    let reminderData: {
+      enabled: boolean;
+      time?: Date;
+      minutesBefore: number;
+      notified: boolean;
+    } = {
+      enabled: false,
+      minutesBefore: 15,
+      notified: false,
+    };
+
+    if (reminder?.enabled) {
+      const reminderTime = new Date(
+        start.getTime() - reminder.minutesBefore * 60 * 1000
+      );
+      reminderData = {
+        enabled: true,
+        time: reminderTime,
+        minutesBefore: reminder.minutesBefore,
+        notified: false,
+      };
+    }
+
     const task = await Task.create({
       title,
       description: description || "",
@@ -94,6 +118,7 @@ export async function POST(request: NextRequest) {
       endTime: end,
       priority: priority || "Medium",
       userId,
+      reminder: reminderData,
     });
 
     console.log("Created task:", {
