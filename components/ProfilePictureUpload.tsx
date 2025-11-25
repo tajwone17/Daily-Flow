@@ -49,6 +49,7 @@ export default function ProfilePictureUpload({
 
   const handleUpload = async (file: File) => {
     setIsUploading(true);
+    console.log("Starting file upload:", file.name, file.size);
 
     try {
       const formData = new FormData();
@@ -70,15 +71,20 @@ export default function ProfilePictureUpload({
       });
 
       const data = await response.json();
+      console.log("Upload response status:", response.status);
+      console.log("Upload response data:", data);
 
       if (response.ok) {
+        console.log("Upload successful, new URL:", data.profilePicture);
         onUploadSuccess(data.profilePicture);
         setPreviewUrl(null);
       } else {
+        console.error("Upload failed:", data.message);
         onUploadError(data.message || "Failed to upload image");
         setPreviewUrl(null);
       }
-    } catch {
+    } catch (error) {
+      console.error("Upload error:", error);
       onUploadError("Network error. Please try again.");
       setPreviewUrl(null);
     } finally {
@@ -118,7 +124,7 @@ export default function ProfilePictureUpload({
   };
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
       <div className="relative">
         {previewUrl ? (
           <div className="relative">
@@ -128,6 +134,7 @@ export default function ProfilePictureUpload({
               width={80}
               height={80}
               className="rounded-full border-4 border-white shadow-lg"
+              unoptimized
             />
             {isUploading && (
               <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
@@ -142,10 +149,16 @@ export default function ProfilePictureUpload({
             width={80}
             height={80}
             className="rounded-full border-4 border-white shadow-lg"
+            unoptimized
+            onError={(e) => {
+              console.error('Profile image failed to load:', currentPicture);
+              // Hide the broken image
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
           />
         ) : (
-          <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-            <span className="text-2xl font-bold text-slate-600">
+          <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+            <span className="text-2xl font-bold text-white">
               {userName?.charAt(0)?.toUpperCase() || "U"}
             </span>
           </div>
@@ -179,22 +192,48 @@ export default function ProfilePictureUpload({
         </button>
       </div>
 
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col space-y-3 text-center md:text-left">
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="text-sm text-slate-600 hover:text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 border border-blue-200"
         >
-          {currentPicture ? "Change Picture" : "Upload Picture"}
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+            />
+          </svg>
+          <span>{currentPicture ? "Change Picture" : "Upload Picture"}</span>
         </button>
 
         {currentPicture && (
           <button
             onClick={handleRemovePicture}
             disabled={isUploading}
-            className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 border border-red-200"
           >
-            Remove Picture
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            <span>Remove Picture</span>
           </button>
         )}
       </div>

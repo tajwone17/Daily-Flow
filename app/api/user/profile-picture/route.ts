@@ -74,9 +74,11 @@ export async function POST(request: NextRequest) {
     const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
     try {
       await mkdir(uploadDir, { recursive: true });
-    } catch {
-      // Directory might already exist
-    } // Generate unique filename
+    } catch (error) {
+      console.log("Upload directory creation:", error);
+    }
+    
+    // Generate unique filename
     const fileExtension = path.extname(file.name);
     const fileName = `${userId}_${Date.now()}${fileExtension}`;
     const filePath = path.join(uploadDir, fileName);
@@ -84,7 +86,16 @@ export async function POST(request: NextRequest) {
     // Convert file to buffer and save
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
+    
+    try {
+      await writeFile(filePath, buffer);
+    } catch (error) {
+      console.error("File write error:", error);
+      return NextResponse.json(
+        { message: "Failed to save file" },
+        { status: 500 }
+      );
+    }
 
     // Remove old profile picture if it exists
     if (user.profilePicture) {
@@ -103,9 +114,13 @@ export async function POST(request: NextRequest) {
 
     // Update user with new profile picture path
     const profilePictureUrl = `/uploads/profiles/${fileName}`;
+    console.log("Saving profile picture URL:", profilePictureUrl);
+    console.log("File saved to:", filePath);
+    
     user.profilePicture = profilePictureUrl;
     await user.save();
 
+    console.log("Profile picture uploaded successfully for user:", userId);
     return NextResponse.json({
       message: "Profile picture uploaded successfully",
       profilePicture: profilePictureUrl,
