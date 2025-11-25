@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.log("Upload directory creation:", error);
     }
-    
+
     // Generate unique filename
     const fileExtension = path.extname(file.name);
     const fileName = `${userId}_${Date.now()}${fileExtension}`;
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     // Convert file to buffer and save
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    
+
     try {
       await writeFile(filePath, buffer);
     } catch (error) {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const profilePictureUrl = `/uploads/profiles/${fileName}`;
     console.log("Saving profile picture URL:", profilePictureUrl);
     console.log("File saved to:", filePath);
-    
+
     user.profilePicture = profilePictureUrl;
     await user.save();
 

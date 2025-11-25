@@ -151,9 +151,9 @@ export default function ProfilePictureUpload({
             className="rounded-full border-4 border-white shadow-lg"
             unoptimized
             onError={(e) => {
-              console.error('Profile image failed to load:', currentPicture);
+              console.error("Profile image failed to load:", currentPicture);
               // Hide the broken image
-              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).style.display = "none";
             }}
           />
         ) : (
