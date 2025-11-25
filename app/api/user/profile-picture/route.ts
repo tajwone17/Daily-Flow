@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // Convert file to base64 for database storage
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64String = buffer.toString('base64');
+    const base64String = buffer.toString("base64");
     const dataUrl = `data:${file.type};base64,${base64String}`;
 
     console.log("Converting image to base64 for database storage");
@@ -119,7 +119,7 @@ export async function DELETE(request: NextRequest) {
     // Update user to remove profile picture (no file system cleanup needed)
     user.profilePicture = undefined;
     await user.save();
-    
+
     console.log("Profile picture removed successfully for user:", userId);
 
     return NextResponse.json({

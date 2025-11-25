@@ -1,6 +1,7 @@
 # Profile Picture Deployment Fix - Base64 Storage Solution
 
 ## Problem
+
 Your deployed site was showing "Failed to save file" errors when uploading profile pictures because:
 
 1. **Serverless Environment**: Most deployment platforms (Vercel, Netlify, Railway, etc.) don't allow writing files to the local file system
@@ -8,17 +9,20 @@ Your deployed site was showing "Failed to save file" errors when uploading profi
 3. **Temporary Storage**: Even if file writes work, they get deleted on redeployments
 
 ## Solution Implemented
+
 Switched from **file system storage** to **base64 database storage**:
 
 ### ✅ What Changed:
 
 1. **API Route (`/api/user/profile-picture/route.ts`)**:
+
    - Removed all file system operations (`writeFile`, `mkdir`, `unlink`)
    - Convert uploaded images to base64 format
    - Store base64 data directly in MongoDB
    - Works on any deployment platform
 
 2. **Next.js Config (`next.config.ts`)**:
+
    - Set `unoptimized: true` to handle base64 images
    - Updated image configuration for deployment compatibility
    - Removed deprecated `domains` in favor of `remotePatterns`
@@ -30,6 +34,7 @@ Switched from **file system storage** to **base64 database storage**:
 ### 🔧 Technical Details:
 
 **Before (File System)**:
+
 ```typescript
 // Save to /public/uploads/profiles/userId_timestamp.jpg
 await writeFile(filePath, buffer);
@@ -37,9 +42,10 @@ user.profilePicture = `/uploads/profiles/${fileName}`;
 ```
 
 **After (Base64 Database)**:
+
 ```typescript
 // Convert to base64 and store in database
-const base64String = buffer.toString('base64');
+const base64String = buffer.toString("base64");
 const dataUrl = `data:${file.type};base64,${base64String}`;
 user.profilePicture = dataUrl;
 ```
