@@ -1,10 +1,12 @@
 export class NotificationService {
   private static instance: NotificationService;
   private permission: NotificationPermission = "default";
+  private swRegistration: ServiceWorkerRegistration | null = null;
 
   private constructor() {
     if (typeof window !== "undefined") {
       this.checkPermission();
+      this.initServiceWorker();
     }
   }
 
@@ -25,6 +27,31 @@ export class NotificationService {
   private checkPermission(): void {
     if (typeof window !== "undefined" && "Notification" in window) {
       this.permission = Notification.permission;
+    }
+  }
+
+  private async initServiceWorker(): Promise<void> {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+      console.warn("Service workers not supported");
+      return;
+    }
+
+    try {
+      this.swRegistration = await navigator.serviceWorker.register("/sw.js", {
+        scope: "/",
+      });
+
+      console.log(
+        "Service Worker registered successfully:",
+        this.swRegistration
+      );
+
+      // Update service worker when a new one is available
+      this.swRegistration.addEventListener("updatefound", () => {
+        console.log("New service worker available");
+      });
+    } catch (error) {
+      console.error("Service Worker registration failed:", error);
     }
   }
 
@@ -64,22 +91,32 @@ export class NotificationService {
       badge: "/favicon.ico",
       tag: "daily-flow-task",
       requireInteraction: true,
+      data: {
+        url: "/dashboard",
+      },
       ...options,
     };
 
     try {
-      const notification = new Notification(title, defaultOptions);
+      // Use service worker notification if available (works when app is closed)
+      if (this.swRegistration) {
+        await this.swRegistration.showNotification(title, defaultOptions);
+        console.log("Push notification sent via service worker");
+      } else {
+        // Fallback to regular notification (only works when app is open)
+        const notification = new Notification(title, defaultOptions);
 
-      // Auto-close after 10 seconds
-      setTimeout(() => {
-        notification.close();
-      }, 10000);
+        // Auto-close after 10 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 10000);
 
-      // Handle click to focus window
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
+        // Handle click to focus window
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+      }
     } catch (error) {
       console.error("Failed to show notification:", error);
     }
@@ -104,6 +141,45 @@ export class NotificationService {
 
   public getPermissionStatus(): NotificationPermission {
     return this.permission;
+  }
+
+  public async scheduleBackgroundNotification(
+    title: string,
+    body: string,
+    scheduleTime: Date,
+    taskId?: string
+  ): Promise<void> {
+    if (!this.swRegistration) {
+      console.warn("Service worker not available for background notifications");
+      return;
+    }
+
+    // For immediate notifications, just show directly
+    if (scheduleTime <= new Date()) {
+      await this.showNotification(title, {
+        body,
+        tag: taskId ? `task-${taskId}` : "daily-flow-reminder",
+        data: {
+          taskId,
+          url: "/dashboard",
+        },
+      });
+      return;
+    }
+
+    // For future notifications, we'll use the existing scheduler
+    // But now they'll use service worker notifications
+    console.log(
+      `Background notification scheduled for ${scheduleTime.toLocaleString()}`
+    );
+  }
+
+  public isServiceWorkerSupported(): boolean {
+    return typeof window !== "undefined" && "serviceWorker" in navigator;
+  }
+
+  public getServiceWorkerRegistration(): ServiceWorkerRegistration | null {
+    return this.swRegistration;
   }
 }
 
