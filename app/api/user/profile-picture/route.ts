@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import path from "path";
 import { connectDB } from "@/lib/dbConnect";
 import User from "@/app/models/User";
 
@@ -70,60 +68,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (error) {
-      console.log("Upload directory creation:", error);
-    }
-
-    // Generate unique filename
-    const fileExtension = path.extname(file.name);
-    const fileName = `${userId}_${Date.now()}${fileExtension}`;
-    const filePath = path.join(uploadDir, fileName);
-
-    // Convert file to buffer and save
+    // Convert file to base64 for database storage
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64String = buffer.toString('base64');
+    const dataUrl = `data:${file.type};base64,${base64String}`;
 
-    try {
-      await writeFile(filePath, buffer);
-    } catch (error) {
-      console.error("File write error:", error);
-      return NextResponse.json(
-        { message: "Failed to save file" },
-        { status: 500 }
-      );
-    }
+    console.log("Converting image to base64 for database storage");
+    console.log("File type:", file.type);
+    console.log("File size:", file.size, "bytes");
+    console.log("Base64 size:", base64String.length, "characters");
 
-    // Remove old profile picture if it exists
-    if (user.profilePicture) {
-      try {
-        const oldFilePath = path.join(
-          process.cwd(),
-          "public",
-          user.profilePicture
-        );
-        await unlink(oldFilePath);
-      } catch (err) {
-        // Old file might not exist
-        console.log("Could not delete old profile picture:", err);
-      }
-    }
-
-    // Update user with new profile picture path
-    const profilePictureUrl = `/uploads/profiles/${fileName}`;
-    console.log("Saving profile picture URL:", profilePictureUrl);
-    console.log("File saved to:", filePath);
-
-    user.profilePicture = profilePictureUrl;
+    // Store base64 image directly in database
+    user.profilePicture = dataUrl;
     await user.save();
 
     console.log("Profile picture uploaded successfully for user:", userId);
     return NextResponse.json({
       message: "Profile picture uploaded successfully",
-      profilePicture: profilePictureUrl,
+      profilePicture: dataUrl,
     });
   } catch (err) {
     console.error("Profile picture upload error:", err);
@@ -153,24 +116,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Remove profile picture file if it exists
-    if (user.profilePicture) {
-      try {
-        const filePath = path.join(
-          process.cwd(),
-          "public",
-          user.profilePicture
-        );
-        await unlink(filePath);
-      } catch (err) {
-        // File might not exist
-        console.log("Could not delete profile picture file:", err);
-      }
-    }
-
-    // Update user to remove profile picture
+    // Update user to remove profile picture (no file system cleanup needed)
     user.profilePicture = undefined;
     await user.save();
+    
+    console.log("Profile picture removed successfully for user:", userId);
 
     return NextResponse.json({
       message: "Profile picture removed successfully",
