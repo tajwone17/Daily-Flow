@@ -229,7 +229,7 @@ Daily Flow Team
             <div class="cta">
                 <a href="${
                   process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-                }/dashboard" class="cta-button">
+                }/dashboard" class="cta-button text-white">
                     View in Daily Flow
                 </a>
             </div>
