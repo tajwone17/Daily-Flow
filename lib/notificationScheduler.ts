@@ -1,5 +1,4 @@
 import { Task } from "./types";
-import { getNotificationService } from "./notificationService";
 
 class NotificationScheduler {
   private static instance: NotificationScheduler;
@@ -39,21 +38,15 @@ class NotificationScheduler {
 
     const delay = reminderTime.getTime() - now.getTime();
 
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(async () => {
       // Double-check the task hasn't been completed
       if (!task.completed) {
-        getNotificationService().showTaskReminder(task.title, task.startTime);
+        await this.sendEmailReminder(task);
       }
       this.scheduledNotifications.delete(task._id);
     }, delay);
 
     this.scheduledNotifications.set(task._id, timeoutId);
-
-    console.log(
-      `Scheduled reminder for "${
-        task.title
-      }" at ${reminderTime.toLocaleString()}`
-    );
   }
 
   public clearTaskReminder(taskId: string): void {
@@ -69,8 +62,13 @@ class NotificationScheduler {
       return;
     }
 
+    // Clear existing reminders first
+    this.clearAllReminders();
+
     tasks.forEach((task) => {
-      this.scheduleTaskReminder(task);
+      if (task.reminder?.enabled && !task.completed) {
+        this.scheduleTaskReminder(task);
+      }
     });
   }
 
@@ -83,6 +81,35 @@ class NotificationScheduler {
 
   public getScheduledCount(): number {
     return this.scheduledNotifications.size;
+  }
+
+  private async sendEmailReminder(task: Task): Promise<void> {
+    try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+      if (!token) {
+        return;
+      }
+
+      const emailData = {
+        taskTitle: task.title,
+        taskDescription: task.description || "",
+        startTime: task.startTime,
+        endTime: task.endTime || task.startTime,
+      };
+
+      await fetch("/api/notifications/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(emailData),
+      });
+    } catch {
+      // Silent fail
+    }
   }
 }
 

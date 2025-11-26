@@ -7,6 +7,7 @@ import { getTasks } from "@/lib/taskApi";
 import TaskCard from "@/components/TaskCard";
 import TaskFormModal from "@/components/TaskFormModal";
 import Navigation from "@/components/Navigation";
+import { getNotificationScheduler } from "@/lib/notificationScheduler";
 
 interface TaskGroup {
   date: string;
@@ -49,6 +50,11 @@ export default function AllTasksPage() {
       const { tasks: fetchedTasks } = await getTasks();
       setTasks(fetchedTasks);
       setError("");
+
+      // Schedule email reminders for tasks with reminders enabled
+      if (typeof window !== "undefined") {
+        getNotificationScheduler().scheduleMultipleReminders(fetchedTasks);
+      }
     } catch (err) {
       setError("Failed to load tasks");
       console.error("Error loading tasks:", err);
@@ -88,6 +94,40 @@ export default function AllTasksPage() {
   const handleCreateTask = () => {
     setEditingTask(null);
     setIsTaskModalOpen(true);
+  };
+
+  const handleDebugReminder = async (task: Task) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No authentication token found");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/debug/reminder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ taskId: task._id }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(
+          `Debug reminder sent successfully to: ${
+            result.emailResult?.recipient || "unknown"
+          }`
+        );
+      } else {
+        const error = await response.json();
+        alert(`Failed to send debug reminder: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error sending debug reminder:", error);
+      alert("Error sending debug reminder. Check console for details.");
+    }
   };
 
   // Filter tasks based on selected filters

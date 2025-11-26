@@ -1,0 +1,42 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="#3b82f6"/>
+  
+  <!-- Inner circle -->
+  <circle cx="256" cy="256" r="200" fill="#ffffff" opacity="0.1"/>
+  
+  <!-- Calendar icon base -->
+  <rect x="128" y="160" width="256" height="224" rx="24" fill="#ffffff"/>
+  
+  <!-- Calendar top binding -->
+  <rect x="128" y="160" width="256" height="48" rx="24" fill="#1e40af"/>
+  
+  <!-- Calendar rings -->
+  <circle cx="192" cy="140" r="8" fill="#ffffff"/>
+  <circle cx="256" cy="140" r="8" fill="#ffffff"/>
+  <circle cx="320" cy="140" r="8" fill="#ffffff"/>
+  
+  <!-- Calendar grid lines -->
+  <line x1="160" y1="240" x2="352" y2="240" stroke="#e5e7eb" stroke-width="2"/>
+  <line x1="160" y1="280" x2="352" y2="280" stroke="#e5e7eb" stroke-width="2"/>
+  <line x1="160" y1="320" x2="352" y2="320" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <line x1="200" y1="208" x2="200" y2="360" stroke="#e5e7eb" stroke-width="2"/>
+  <line x1="256" y1="208" x2="256" y2="360" stroke="#e5e7eb" stroke-width="2"/>
+  <line x1="312" y1="208" x2="312" y2="360" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <!-- Task checkmarks -->
+  <circle cx="180" cy="260" r="6" fill="#10b981"/>
+  <path d="M176 260l2 2 4-4" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <circle cx="236" cy="260" r="6" fill="#10b981"/>
+  <path d="M232 260l2 2 4-4" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Pending task -->
+  <circle cx="180" cy="300" r="6" fill="#f59e0b"/>
+  
+  <!-- Clock icon for time -->
+  <circle cx="292" cy="300" r="12" fill="#3b82f6"/>
+  <line x1="292" y1="295" x2="292" y2="300" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="292" y1="300" x2="297" y2="300" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+</svg>

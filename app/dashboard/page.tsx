@@ -8,6 +8,7 @@ import TaskCard from "@/components/TaskCard";
 import TaskFormModal from "@/components/TaskFormModal";
 import Navigation from "@/components/Navigation";
 import DailySummary from "@/components/DailySummary";
+
 import { getNotificationScheduler } from "@/lib/notificationScheduler";
 
 export default function DashboardPage() {
@@ -140,6 +141,8 @@ export default function DashboardPage() {
         <div className="mb-8">
           <DailySummary tasks={tasks} />
         </div>
+
+        {/* Email Notification Status */}
 
         {/* Error Message */}
         {error && (
