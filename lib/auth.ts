@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
-import { dbConnect } from "@/lib/dbConnect";
+import { connectDB } from "@/lib/dbConnect";
 import User from "@/app/models/User";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
@@ -32,7 +32,7 @@ export async function verifyToken(request: NextRequest) {
   }
 
   try {
-    await dbConnect();
+    await connectDB();
     const user = await User.findById(userId).select("-password");
     return user;
   } catch (error) {
