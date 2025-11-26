@@ -102,7 +102,7 @@ export class EmailService {
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
 
-    const formattedStartTime = startDate.toLocaleString("en-US", {
+    const formattedStartTime = startDate.toLocaleString(undefined, {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -111,7 +111,7 @@ export class EmailService {
       minute: "2-digit",
     });
 
-    const formattedEndTime = endDate.toLocaleTimeString("en-US", {
+    const formattedEndTime = endDate.toLocaleTimeString(undefined, {
       hour: "2-digit",
       minute: "2-digit",
     });
