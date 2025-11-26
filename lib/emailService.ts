@@ -154,8 +154,8 @@ Daily Flow Team
     userName: string,
     taskTitle: string,
     taskDescription: string,
-    startTime: string,
-    endTime: string
+    formattedStartTime: string,
+    formattedEndTime: string
   ): string {
     return `
 <!DOCTYPE html>
@@ -212,11 +212,11 @@ Daily Flow Team
                 <div class="time-info">
                     <div class="time-item">
                         <div class="time-label">Start Time</div>
-                        <div class="time-value">⏰ ${startTime}</div>
+                        <div class="time-value">⏰ ${formattedStartTime}</div>
                     </div>
                     <div class="time-item">
                         <div class="time-label">End Time</div>
-                        <div class="time-value">🏁 ${endTime}</div>
+                        <div class="time-value">🏁 ${formattedEndTime}</div>
                     </div>
                 </div>
             </div>
