@@ -102,18 +102,23 @@ export class EmailService {
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
 
-    const formattedStartTime = startDate.toLocaleString(undefined, {
+    // Use the same timezone as the client (Bangladesh timezone UTC+6)
+    const timeZone = "Asia/Dhaka";
+
+    const formattedStartTime = startDate.toLocaleString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: timeZone,
     });
 
-    const formattedEndTime = endDate.toLocaleTimeString(undefined, {
+    const formattedEndTime = endDate.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: timeZone,
     });
 
     const subject = `⏰ Task Reminder: ${taskTitle}`;
