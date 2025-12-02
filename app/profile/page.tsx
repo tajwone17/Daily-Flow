@@ -256,9 +256,9 @@ export default function ProfilePage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Profile Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-12">
+          <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-8 py-12">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <ProfilePictureUpload
                   currentPicture={user?.profilePicture}
                   userName={user?.fullName || ""}
@@ -436,7 +436,7 @@ export default function ProfilePage() {
                       <label className="block text-sm font-medium text-green-700 dark:text-gray-300 mb-2">
                         Email
                       </label>
-                      <div className="text-lg font-semibold text-gray-900 dark:text-white break-words">
+                      <div className="text-lg font-semibold text-gray-900 dark:text-white wrap-break-word">
                         {user?.email || "Not provided"}
                       </div>
                     </div>

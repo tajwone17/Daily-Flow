@@ -5,6 +5,11 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET as string | undefined;
 
+// Validation functions
+const validatePassword = (password: string): boolean => {
+  return !!password && password.length >= 6;
+};
+
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -15,6 +20,16 @@ export async function POST(req: Request) {
     if (!email || !password) {
       return new Response(
         JSON.stringify({ message: "Missing email or password" }),
+        { status: 400 }
+      );
+    }
+
+    // Validate password
+    if (!validatePassword(password)) {
+      return new Response(
+        JSON.stringify({
+          message: "Password must be at least 6 characters long",
+        }),
         { status: 400 }
       );
     }
@@ -52,7 +67,6 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
- 
     console.error(error);
     return new Response(JSON.stringify({ message: "Server Error" }), {
       status: 500,

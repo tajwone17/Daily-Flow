@@ -96,40 +96,6 @@ export default function AllTasksPage() {
     setIsTaskModalOpen(true);
   };
 
-  const handleDebugReminder = async (task: Task) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("No authentication token found");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/debug/reminder", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ taskId: task._id }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(
-          `Debug reminder sent successfully to: ${
-            result.emailResult?.recipient || "unknown"
-          }`
-        );
-      } else {
-        const error = await response.json();
-        alert(`Failed to send debug reminder: ${error.message}`);
-      }
-    } catch (error) {
-      console.error("Error sending debug reminder:", error);
-      alert("Error sending debug reminder. Check console for details.");
-    }
-  };
-
   // Filter tasks based on selected filters
   const getFilteredTasks = () => {
     let filteredTasks = [...tasks];

@@ -5,6 +5,15 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET as string | undefined;
 
+// Validation functions
+const validatePassword = (password: string): boolean => {
+  if (!password || password.length < 6) return false;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  return hasUppercase && hasLowercase && hasNumber;
+};
+
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -15,6 +24,17 @@ export async function POST(req: Request) {
     if (!fullName || !email || !password) {
       return new Response(
         JSON.stringify({ message: "Missing required fields" }),
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    if (!validatePassword(password)) {
+      return new Response(
+        JSON.stringify({
+          message:
+            "Password must be at least 6 characters and contain uppercase, lowercase, and number",
+        }),
         { status: 400 }
       );
     }
@@ -33,7 +53,6 @@ export async function POST(req: Request) {
       password: hashedPassword,
     });
 
- 
     let token: string | null = null;
     if (JWT_SECRET) {
       token = jwt.sign({ id: created._id }, JWT_SECRET, { expiresIn: "7d" });
@@ -55,7 +74,6 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-   
     console.error(error);
     return new Response(JSON.stringify({ message: "Server Error" }), {
       status: 500,

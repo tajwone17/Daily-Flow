@@ -30,8 +30,18 @@ export default function RegisterPage() {
       return;
     }
 
+    // Enhanced password validation
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (!hasUppercase || !hasLowercase || !hasNumber) {
+      setError("Password must contain uppercase, lowercase, and number.");
       return;
     }
 
@@ -295,7 +305,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="Min. 6 characters"
+                  placeholder="6+ chars, uppercase, lowercase, number"
                   required
                   aria-label="Password"
                 />
