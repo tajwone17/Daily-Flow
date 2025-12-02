@@ -41,6 +41,17 @@ export async function POST(req: Request) {
       });
     }
 
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      return new Response(
+        JSON.stringify({
+          message: "Please verify your email address to login",
+          needsVerification: true,
+        }),
+        { status: 403 }
+      );
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return new Response(JSON.stringify({ message: "Invalid credentials" }), {

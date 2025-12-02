@@ -19,6 +19,50 @@ interface EmailOptions {
   text?: string;
 }
 
+// Generate OTP
+export const generateOTP = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// OTP email template
+export const createOTPEmailTemplate = (
+  otp: string,
+  fullName: string
+): string => {
+  return `
+    <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white;">
+        <h1 style="margin: 0; font-size: 28px;">📧 Email Verification</h1>
+        <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Daily Flow - Verify Your Email</p>
+      </div>
+      
+      <div style="padding: 40px 30px; background-color: #f8f9fa;">
+        <h2 style="color: #333; margin-bottom: 20px;">Hello ${fullName}!</h2>
+        
+        <p style="font-size: 16px; margin-bottom: 20px;">Welcome to Daily Flow! To complete your registration, please verify your email address using the OTP below:</p>
+        
+        <div style="background-color: white; border: 2px dashed #667eea; padding: 20px; text-align: center; margin: 30px 0; border-radius: 8px;">
+          <h1 style="color: #667eea; font-size: 36px; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace;">${otp}</h1>
+        </div>
+        
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+          <strong>⏰ This OTP will expire in 10 minutes</strong>
+        </p>
+        
+        <p style="color: #666; font-size: 14px;">
+          If you didn't create an account with Daily Flow, please ignore this email.
+        </p>
+        
+        <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; text-align: center;">
+          <p style="color: #999; font-size: 12px; margin: 0;">
+            © 2025 Daily Flow. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
 export class EmailService {
   private static instance: EmailService;
   private transporter: nodemailer.Transporter | null = null;

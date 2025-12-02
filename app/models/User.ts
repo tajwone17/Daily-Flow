@@ -8,6 +8,9 @@ const userSchema = new Schema(
     profession: { type: String },
     bio: { type: String },
     profilePicture: { type: String },
+    isEmailVerified: { type: Boolean, default: false },
+    emailOTP: { type: String },
+    emailOTPExpiry: { type: Date },
   },
   { timestamps: true }
 );
