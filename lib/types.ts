@@ -42,7 +42,7 @@ export interface UpdateTaskData {
   };
 }
 
-// Priority colors for UI
+// Priority 
 export const priorityColors = {
   High: "bg-red-100 text-red-800 border-red-200",
   Medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
